@@ -1,0 +1,77 @@
+/* Global Styles */
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+}
+
+/* Navbar Styles */
+.navbar {
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-brand {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.navbar-links a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    font-weight: bold;
+}
+
+.navbar-links a:hover {
+    text-decoration: underline;
+}
+
+/* Game Selection Styles */
+.game-selection-container {
+    text-align: center;
+    margin-top: 50px;
+}
+
+h2 {
+    color: #333;
+    font-size: 2em;
+    margin-bottom: 30px;
+}
+
+.game-cards {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.game-card {
+    background: linear-gradient(145deg, #ffffff, #e6e6e6);
+    border-radius: 10px;
+    box-shadow: 5px 5px 15px #ccc, -5px -5px 15px #ffffff;
+    cursor: pointer;
+    margin: 15px;
+    padding: 20px;
+    width: 250px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.game-card:hover {
+    transform: scale(1.05);
+    box-shadow: 10px 10px 30px #ccc, -10px -10px 30px #ffffff;
+}
+
+.game-card-content h3 {
+    margin: 0;
+    font-size: 1.5em;
+    color: #333;
+}
+
+.game-card-content p {
+    color: #666;
+    font-size: 0.9em;
+}
