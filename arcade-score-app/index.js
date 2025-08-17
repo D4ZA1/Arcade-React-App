@@ -1,132 +1,158 @@
+
 const express = require('express');
 const cors = require('cors');
-const mysql = require('mysql2/promise');
+const { MongoClient } = require('mongodb');
 
 const app = express();
 app.use(express.json());
 
-// Middleware to log requests
-app.use((req, res, next) => {
-    console.log(`${req.method} request to ${req.url}`);
-    next();
-});
-
-
 app.use(cors({
-    origin: '*', // Replace with your React app's IP and port
-    methods: 'GET,POST,PUT,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type,Authorization',
+  origin: '*',
+  methods: 'GET,POST,PUT,DELETE,OPTIONS',
+  allowedHeaders: 'Content-Type,Authorization',
 }));
 
-const dbConfig = {
-    host: 'localhost',
-    user: 'root',
-    password: 'Jaswanth84',
-    database: 'Arcade',
-    port: 3306,
-};
+const MONGO_URI = 'mongodb://172.29.14.81:27017';  
+const DB_NAME = 'Arcade';
 
-// Test database connection
-const testDbConnection = async () => {
-    let connection;
-    try {
-        connection = await mysql.createConnection(dbConfig);
-        console.log('Database connection successful!');
-        await connection.execute('SELECT 1'); // Simple query to test connection
-    } catch (err) {
-        console.error('Database connection failed:', err);
-        process.exit(1); // Exit the process with failure code
-    } finally {
-        if (connection) {
-            await connection.end();
-        }
-    }
-};
+let db;
 
-testDbConnection();
+async function connectMongo() {
+  const client = new MongoClient(MONGO_URI);
+  await client.connect();
+  db = client.db(DB_NAME);
+  console.log('✅ Connected to MongoDB');
+}
+connectMongo().catch(err => {
+  console.error('❌ MongoDB connection failed:', err);
+  process.exit(1);
+});
 
-// User Login
+// Login Route
 app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+  const { username, password } = req.body;
+  if (!username || !password) return res.status(400).send('Username and password required');
 
-    try {
-        const connection = await mysql.createConnection(dbConfig);
-        const [rows] = await connection.execute(
-            `SELECT * FROM Users WHERE username = ? AND password_hash = ?`,
-            [username, password]
-        );
-
-        const user = rows[0];
-
-        if (!user) {
-            return res.status(401).send('Invalid credentials');
-        }
-
-        res.status(200).send(`Login successful for ${user.username}`);
-        await connection.end();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Internal Server Error');
+  try {
+    const user = await db.collection('users').findOne({ username });
+    if (!user || user.password_hash !== password) {
+      return res.status(401).send('Invalid credentials');
     }
+    res.status(200).send(`Login successful for ${username}`);
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
+// Get All Games
 app.get('/games', async (req, res) => {
-    try {
-        const connection = await mysql.createConnection(dbConfig);
-        const [rows] = await connection.execute('SELECT * FROM Games'); // Adjust the query as needed
-        res.json(rows);
-        await connection.end();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Internal Server Error');
-    }
+  try {
+    const games = await db.collection('games').find().toArray();
+    res.json(games);
+  } catch (err) {
+    console.error('Get games error:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-// Route to handle score entries
+// Add Game Scores
 app.post('/score-entry', async (req, res) => {
-    const { game_id, username, score } = req.body;
+  const { game_id, name, rollno, score } = req.body;
 
-    try {
-        const connection = await mysql.createConnection(dbConfig);
-        const [result] = await connection.execute(
-            `INSERT INTO Scores (game_id, username, score) VALUES (?, ?, ?)`,
+  if (!game_id || !name || !rollno || typeof score !== 'number') {
+    return res.status(400).send('Please provide game_id, name, rollno, and numeric score');
+  }
 
-            [game_id, username, score]
-        );
-
-        res.status(201).send('Score entry added successfully');
-        await connection.end();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Internal Server Error');
-    }
+  try {
+    await db.collection('scores').insertOne({
+      game_id,
+      name,
+      rollno,
+      score,
+      timestamp: new Date(),
+    });
+    res.status(201).send('Score entry added successfully');
+  } catch (err) {
+    console.error('Insert score error:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 app.get('/scores', async (req, res) => {
-    try {
-        const connection = await mysql.createConnection(dbConfig);
-
-        // Get all unique usernames
-        const [users] = await connection.execute('SELECT DISTINCT username FROM Scores');
-
-        const scores = [];
-
-        // Calculate the total score for each user
-        for (let user of users) {
-            const [totalScore] = await connection.execute(
-                'SELECT SUM(score) as totalScore FROM Scores WHERE username = ?',
-                [user.username]
-            );
-            scores.push({ username: user.username, totalScore: totalScore[0].totalScore });
+  try {
+    const aggregation = [
+      // Group by rollno and name to count name frequencies
+      {
+        $group: {
+          _id: { rollno: '$rollno', name: '$name' },
+          nameCount: { $sum: 1 },
+          totalScore: { $sum: '$score' }
         }
+      },
+      // Group by rollno again to pick most frequent name
+      {
+        $sort: { 'nameCount': -1 } // important for picking the first name later
+      },
+      {
+        $group: {
+          _id: '$_id.rollno',
+          totalScore: { $sum: '$totalScore' },
+          name: { $first: '$_id.name' }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          rollno: '$_id',
+          name: 1,
+          totalScore: 1
+        }
+      },
+      { $sort: { totalScore: -1 } }
+    ];
 
-        res.json(scores);
-        await connection.end();
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Internal Server Error');
-    }
+    const results = await db.collection('scores').aggregate(aggregation).toArray();
+    res.json(results);
+  } catch (err) {
+    console.error('Get scores error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});// Add Games by Game ID
+app.post('/add-games', async (req, res) => {
+  const { games } = req.body;
+  if (!Array.isArray(games)) return res.status(400).send('Games must be an array of objects with game_id and name');
+
+  try {
+    const docs = games.map(({ game_id, name }) => ({ game_id, name }));
+    await db.collection('games').insertMany(docs);
+    res.status(201).send('Games added successfully');
+  } catch (err) {
+    console.error('Add games error:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
+// Bulk Delete Scores by Roll Number
+app.delete('/delete-scores', async (req, res) => {
+  const { rollnos } = req.body;
+  if (!Array.isArray(rollnos)) return res.status(400).send('rollnos must be an array');
+
+  try {
+    const result = await db.collection('scores').deleteMany({ rollno: { $in: rollnos } });
+    res.status(200).send(`Deleted ${result.deletedCount} score(s)`);
+  } catch (err) {
+    console.error('Delete scores error:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// Safety
+process.on('unhandledRejection', (reason) => console.error('Unhandled Rejection:', reason));
+process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
+
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
+

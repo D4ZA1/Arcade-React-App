@@ -1,0 +1,25 @@
+{
+  "name": "arcade-react-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/D4ZA1/Arcade-React-App.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/D4ZA1/Arcade-React-App/issues"
+  },
+  "homepage": "https://github.com/D4ZA1/Arcade-React-App#readme",
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongodb": "^6.18.0"
+  }
+}

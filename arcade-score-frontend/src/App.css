@@ -1,0 +1,60 @@
+/* Import pixel arcade font */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+.App {
+  text-align: center;
+  height: 100vh;
+  margin: 0;
+  background-color: black;
+  /* fallback */
+}
+
+.App-header {
+  font-family: 'Press Start 2P', cursive;
+  background-color: #000;
+  /* black background */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(8px + 2vmin);
+  color: #00ffea;
+  /* neon cyan text */
+  text-shadow: 0 0 8px #00ffea, 0 0 20px #ff00c8;
+  /* neon cyan + pink glow */
+  position: relative;
+  overflow-x: hidden;
+
+  /* Retro grid background */
+  background-image:
+    linear-gradient(#0ff 1px, transparent 1px),
+    linear-gradient(90deg, #0ff 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-repeat: repeat;
+}
+
+/* Neon flicker effect on header text */
+.App-header h1 {
+  animation: flicker 3s infinite alternate;
+  margin-bottom: 20px;
+}
+
+@keyframes flicker {
+
+  0%,
+  100% {
+    text-shadow: 0 0 8px #00ffea, 0 0 20px #ff00c8;
+    opacity: 1;
+  }
+
+  50% {
+    text-shadow: 0 0 20px #00ffea, 0 0 30px #ff00c8;
+    opacity: 0.9;
+  }
+}
+
+.App-header p {
+  font-size: calc(6px + 1.5vmin);
+  margin: 0;
+}

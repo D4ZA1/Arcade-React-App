@@ -1,0 +1,101 @@
+/* Import Retro Font */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+
+/* Global Styles */
+body,
+html {
+  margin: 0;
+  font-family: 'Press Start 2P', cursive;
+  background: linear-gradient(135deg, #000000, #1a1a1a);
+  color: #00ffea;
+  text-shadow: 1px 1px 2px #ff00c8;
+}
+
+/* Navbar Styles */
+.navbar {
+  background-color: #111;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 4px double #00ffea;
+  box-shadow: 0 0 15px #00ffea;
+}
+
+.navbar-brand {
+  font-size: 1.2em;
+  color: #ff00c8;
+  text-shadow: 1px 1px 0 #00ffea;
+}
+
+.navbar-links a {
+  color: #00ffea;
+  text-decoration: none;
+  margin-left: 20px;
+  font-size: 0.8em;
+  transition: all 0.3s ease;
+}
+
+.navbar-links a:hover {
+  color: #ff00c8;
+  text-shadow: 0 0 5px #ff00c8;
+}
+
+/* Game Selection Styles */
+.game-selection-container {
+  text-align: center;
+  margin-top: 50px;
+  color: #fff;
+}
+
+h2 {
+  font-size: 1.5em;
+  margin-bottom: 30px;
+  color: #00ffea;
+  text-shadow: 2px 2px 0 #ff00c8;
+}
+
+/* Game Cards Grid */
+.game-cards {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 20px;
+}
+
+/* Game Card Styles */
+.game-card {
+  background: repeating-linear-gradient(45deg,
+      #222,
+      #222 10px,
+      #111 10px,
+      #111 20px);
+  border: 2px solid #00ffea;
+  border-radius: 10px;
+  color: #00ffea;
+  box-shadow: 0 0 15px #ff00c8;
+  cursor: pointer;
+  margin: 20px;
+  padding: 20px;
+  width: 240px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.game-card:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 30px #ff00c8, 0 0 10px #00ffea;
+  border-color: #ff00c8;
+}
+
+.game-card-content h3 {
+  font-size: 0.9em;
+  color: #ff00c8;
+  margin-bottom: 10px;
+  text-shadow: 1px 1px 0 #00ffea;
+}
+
+.game-card-content p {
+  font-size: 0.6em;
+  color: #ccc;
+}
